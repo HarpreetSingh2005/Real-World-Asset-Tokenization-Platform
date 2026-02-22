@@ -18,3 +18,8 @@
 
 # Hardhat coverage reports
 /coverage
+
+
+#not correctly made
+/scripts
+/ignition
