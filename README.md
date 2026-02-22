@@ -1,57 +1,75 @@
-# Sample Hardhat 3 Beta Project (`mocha` and `ethers`)
+# Real-World Asset Tokenization Platform
 
-This project showcases a Hardhat 3 Beta project using `mocha` for tests and the `ethers` library for Ethereum interactions.
+This is a Real-World Asset (RWA) tokenization platform built with Solidity, ERC1155, and Hardhat.
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+A RWA Tokenization Platform is a digital infrastructure that enables the conversion of physical or traditional financial assets, such as real estate, bonds, commodities, or art—into blockchain-based digital tokens. These platforms bridge traditional finance (TradFi) with decentralized finance (DeFi), allowing for fractional ownership, real-time settlement, global access, and enhanced liquidity.
 
 ## Project Overview
 
-This example project includes:
+This project demonstrates a full on-chain lifecycle for real-world assets:
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+- Asset tokenization using ERC1155 (fractional ownership)
+- Factory pattern for user-specific asset contracts
+- On-chain auctions for asset fractions
+- Ownership transfer & resale support
 
-## Usage
+The codebase is intentionally structured to reflect production-grade smart contract design..
 
-### Running Tests
+## Architecture
 
-To run all the tests in the project, execute the following command:
+Core Contracts
 
-```shell
-npx hardhat test
-```
+1. RWAAssetFactory.sol:
+    - Factory pattern for asset deployment
+    - Each user gets one dedicated asset contract
+    - Tracks deployed asset contracts
+    - Enables clean indexing and isolation
+2. RWAAsset.sol:
+    - ERC1155-based fractional asset model
+    - Each asset ID represents a real-world asset
+    - Fractions are minted to owners
+    - Metadata stored per asset ID
+    - Ownership is balance-based, not role-based
+3. RWAAuction.sol: Valid asset holders can auction their fractions for sell.
+    - Auctions fractions of any ERC1155-compatible asset
+    - Uses safeTransferFrom to escrow fractions
+    - Highest-bidder-wins model
+    - Supports secondary auctions (design-dependent)
+    - Enforces ERC1155 approval rules strictly
+### Important Design Decision
+ERC1155 Approval Requirement: The auction contract requires explicit approval from the current token holder.
 
-You can also selectively run the Solidity or `mocha` tests:
+## Asset Lifecycle
+Deploy Asset → Mint Fractions → Approve Auction
+     ↓
+Start Auction → Place Bids → End Auction
+     ↓
+Fractions Transferred → New Owner Can Re-Auction
 
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
-```
+## What Is Tested?
+1. Factory Tests
+    - One asset contract per user
+    - Duplicate deployments prevented
+    - Correct asset tracking
+      
+2. Asset Tests
+    - Only owner can mint fractions
+    - ERC1155 balances behave correctly
+    - Metadata storage
 
-### Make a deployment to Sepolia
+3. Auction Tests
+    - Auction creation rules
+    - Approval enforcement
+    - Bid handling & refunds
+    - Time-based auction ending
+    - Fraction transfer on succes
+    - ETH transfer to seller
+    - Secondary owner auction capability
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
 
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
-```
-
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
-
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+## Tech Stack 
+- Solidity ^0.8.x
+- OpenZeppelin Contracts (ERC1155)
+- Hardhat
+- Ethers.js v6
+- Mocha + Chai
