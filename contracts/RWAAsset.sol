@@ -40,6 +40,7 @@ contract RWAAsset is ERC1155, Ownable {
         assetMetadata[assetId] = metadata;
         totalSupply[assetId] = totalFractions;
         emit AssetMinted(assetId, totalFractions, initialOwner, metadata);
+        
     }
 
     /**
@@ -51,6 +52,12 @@ contract RWAAsset is ERC1155, Ownable {
     function viewTotalFractions(uint256 assetId) public view returns (uint256) {
         return totalSupply[assetId];
     }
+
+    /**
+     * @dev View the metadata of an asset
+     * @param assetId The asset ID
+     * @return The metadata
+     */
     function viewMetadata(uint256 assetId) public view returns (string memory) {
         return assetMetadata[assetId];
     }
